@@ -1,0 +1,44 @@
+{
+  "plan_id": "status_lookup",
+  "version": 3,
+  "case_type": "invoice.inquiry",
+  "tenant": "acme-americas",
+  "signature": {
+    "case_type": "invoice.inquiry",
+    "match_fields": [
+      "vendor",
+      "invoice_number"
+    ],
+    "intent": "status"
+  },
+  "steps": [
+    {
+      "id": "fetch_invoice",
+      "skill": "spine.fetch_invoice",
+      "args": {
+        "vendor_id": "case_file.vendor_id",
+        "invoice_number": "case_file.invoice_number"
+      },
+      "expects": [
+        "outputs.invoice_found == true"
+      ]
+    },
+    {
+      "id": "compose_status",
+      "skill": "cases.compose_reply",
+      "args": {
+        "template": "invoice_status",
+        "invoice": "steps.fetch_invoice.invoice"
+      },
+      "gates": [
+        "reply_grounding_check"
+      ],
+      "approval": false
+    }
+  ],
+  "on_expectation_failure": "escalate",
+  "citations": [
+    "ACME-AP-POL-102 \u00a72",
+    "MAESTRO-PB-004 \u00a71"
+  ]
+}

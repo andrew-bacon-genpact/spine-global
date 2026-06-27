@@ -1,0 +1,54 @@
+{
+  "plan_id": "duplicate_of_paid",
+  "version": 1,
+  "case_type": "invoice.inquiry",
+  "tenant": "acme-americas",
+  "signature": {
+    "case_type": "invoice.inquiry",
+    "match_fields": [
+      "vendor",
+      "invoice_number"
+    ],
+    "intent": "already_paid"
+  },
+  "steps": [
+    {
+      "id": "fetch_invoice",
+      "skill": "spine.fetch_invoice",
+      "args": {
+        "vendor_id": "case_file.vendor_id",
+        "invoice_number": "case_file.invoice_number"
+      },
+      "expects": [
+        "outputs.invoice_found == true"
+      ]
+    },
+    {
+      "id": "check_paid",
+      "skill": "spine.fetch_disbursement",
+      "args": {
+        "invoice_id": "steps.fetch_invoice.invoice.id"
+      },
+      "expects": [
+        "outputs.disbursed == true"
+      ]
+    },
+    {
+      "id": "compose_reply",
+      "skill": "cases.compose_reply",
+      "args": {
+        "template": "already_paid",
+        "schedule": "steps.check_paid.schedule"
+      },
+      "gates": [
+        "reply_grounding_check"
+      ],
+      "approval": false
+    }
+  ],
+  "on_expectation_failure": "escalate",
+  "citations": [
+    "ACME-AP-POL-102 \u00a72",
+    "ACME-AP-POL-114 v2 \u00a74.3"
+  ]
+}
