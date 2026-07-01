@@ -1,0 +1,53 @@
+{
+  "plan_id": "pricing_discrepancy",
+  "version": 1,
+  "case_type": "deduction_dispute",
+  "tenant": "acme-americas",
+  "signature": {
+    "case_type": "deduction_dispute",
+    "match_fields": [
+      "vendor",
+      "po_reference",
+      "line_items"
+    ],
+    "dispute_kind": "pricing"
+  },
+  "steps": [
+    {
+      "id": "fetch_deduction",
+      "skill": "spine.fetch_deduction",
+      "args": {
+        "deduction_id": "case_file.deduction_id"
+      },
+      "expects": [
+        "outputs.deduction_found == true"
+      ]
+    },
+    {
+      "id": "compare_price",
+      "skill": "custom.contract_price_check",
+      "args": {
+        "deduction": "steps.fetch_deduction.deduction",
+        "vendor_id": "case_file.vendor_id"
+      },
+      "expects": [
+        "outputs.price_checked == true"
+      ]
+    },
+    {
+      "id": "record_outcome",
+      "skill": "cases.record_disposition",
+      "args": {
+        "disposition": "pricing_adjusted"
+      },
+      "gates": [
+        "deduction_disposition_check"
+      ],
+      "approval": true
+    }
+  ],
+  "on_expectation_failure": "escalate",
+  "citations": [
+    "ACME-AP-POL-102 \u00a72"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "plan_id": "promo_allowance",
+  "version": 1,
+  "case_type": "deduction_dispute",
+  "tenant": "acme-americas",
+  "signature": {
+    "case_type": "deduction_dispute",
+    "match_fields": [
+      "vendor"
+    ],
+    "dispute_kind": "allowance"
+  },
+  "steps": [
+    {
+      "id": "fetch_deduction",
+      "skill": "spine.fetch_deduction",
+      "args": {
+        "deduction_id": "case_file.deduction_id"
+      },
+      "expects": [
+        "outputs.deduction_found == true"
+      ]
+    },
+    {
+      "id": "check_allowance",
+      "skill": "custom.allowance_agreement_check",
+      "args": {
+        "deduction": "steps.fetch_deduction.deduction",
+        "vendor_id": "case_file.vendor_id"
+      },
+      "expects": [
+        "outputs.allowance_found == true"
+      ]
+    },
+    {
+      "id": "record_outcome",
+      "skill": "cases.record_disposition",
+      "args": {
+        "disposition": "allowance_valid"
+      },
+      "gates": [
+        "deduction_disposition_check"
+      ],
+      "approval": true
+    }
+  ],
+  "on_expectation_failure": "escalate",
+  "citations": [
+    "ACME-AP-POL-121 \u00a73"
+  ]
+}

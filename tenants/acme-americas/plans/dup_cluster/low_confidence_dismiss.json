@@ -1,0 +1,55 @@
+{
+  "plan_id": "low_confidence_dismiss",
+  "version": 3,
+  "case_type": "dup_cluster",
+  "tenant": "acme-americas",
+  "signature": {
+    "case_type": "dup_cluster",
+    "match_fields": [
+      "vendor",
+      "amount"
+    ],
+    "diff_fields": [
+      "po_reference",
+      "line_items"
+    ],
+    "po_kind": "standard"
+  },
+  "steps": [
+    {
+      "id": "fetch_pair",
+      "skill": "spine.fetch_invoice_pair",
+      "args": {
+        "pair_id": "case_file.pair_id"
+      },
+      "expects": [
+        "outputs.pair_found == true"
+      ]
+    },
+    {
+      "id": "score_pair",
+      "skill": "custom.duplicate_confidence",
+      "args": {
+        "pair": "steps.fetch_pair.pair"
+      },
+      "expects": [
+        "outputs.confidence <= 0.30"
+      ]
+    },
+    {
+      "id": "release_disposition",
+      "skill": "cases.record_disposition",
+      "args": {
+        "disposition": "not_duplicate"
+      },
+      "gates": [
+        "duplicate_disposition_check"
+      ],
+      "approval": true
+    }
+  ],
+  "on_expectation_failure": "escalate",
+  "citations": [
+    "ACME-AP-POL-114 v2 \u00a74.1"
+  ]
+}

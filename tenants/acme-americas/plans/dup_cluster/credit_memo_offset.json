@@ -1,0 +1,56 @@
+{
+  "plan_id": "credit_memo_offset",
+  "version": 2,
+  "case_type": "dup_cluster",
+  "tenant": "acme-americas",
+  "signature": {
+    "case_type": "dup_cluster",
+    "match_fields": [
+      "vendor",
+      "amount",
+      "po_reference"
+    ],
+    "diff_fields": [
+      "document_type"
+    ],
+    "po_kind": "standard"
+  },
+  "steps": [
+    {
+      "id": "fetch_pair",
+      "skill": "spine.fetch_invoice_pair",
+      "args": {
+        "pair_id": "case_file.pair_id"
+      },
+      "expects": [
+        "outputs.pair_found == true"
+      ]
+    },
+    {
+      "id": "classify_memo",
+      "skill": "custom.credit_memo_match",
+      "args": {
+        "pair": "steps.fetch_pair.pair"
+      },
+      "expects": [
+        "outputs.is_credit_memo == true"
+      ]
+    },
+    {
+      "id": "apply_offset",
+      "skill": "cases.record_disposition",
+      "args": {
+        "disposition": "credit_memo_offset"
+      },
+      "gates": [
+        "duplicate_disposition_check"
+      ],
+      "approval": true
+    }
+  ],
+  "on_expectation_failure": "escalate",
+  "citations": [
+    "ACME-AP-POL-121 \u00a72",
+    "ACME-AP-POL-121 \u00a73"
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "plan_id": "shortage_claim",
+  "version": 2,
+  "case_type": "deduction_dispute",
+  "tenant": "acme-americas",
+  "signature": {
+    "case_type": "deduction_dispute",
+    "match_fields": [
+      "vendor",
+      "po_reference"
+    ],
+    "dispute_kind": "shortage"
+  },
+  "steps": [
+    {
+      "id": "fetch_deduction",
+      "skill": "spine.fetch_deduction",
+      "args": {
+        "deduction_id": "case_file.deduction_id"
+      },
+      "expects": [
+        "outputs.deduction_found == true"
+      ]
+    },
+    {
+      "id": "match_receipt",
+      "skill": "custom.goods_receipt_match",
+      "args": {
+        "deduction": "steps.fetch_deduction.deduction",
+        "po_reference": "case_file.po_reference"
+      },
+      "expects": [
+        "outputs.receipt_found == true"
+      ]
+    },
+    {
+      "id": "record_outcome",
+      "skill": "cases.record_disposition",
+      "args": {
+        "disposition": "shortage_upheld"
+      },
+      "gates": [
+        "deduction_disposition_check"
+      ],
+      "approval": true
+    }
+  ],
+  "on_expectation_failure": "escalate",
+  "citations": [
+    "ACME-AP-POL-102 \u00a74"
+  ]
+}
