@@ -1,10 +1,10 @@
 ---
 doc_ref: ACME-AP-POL-114
 title: Duplicate invoice handling policy
-version: 2
-effective: January 2025
+version: 3
+effective: April 2026
 source_store: Acme policy library (governed SharePoint)
-ingested: 2025-01-14
+ingested: 2026-07-09
 owner: marcus.okafor
 ---
 
@@ -49,11 +49,20 @@ are closed without action and retained for audit.
 
 ### 4.2 Review threshold
 
-Invoice pairs that match exactly on amount and purchase-order reference within a 45-day window must be routed for human review before any payment disposition is applied.
+Invoice pairs that match exactly on amount and purchase-order reference within a 60-day window must be routed for human review before any payment disposition is applied.
 
 ### 4.3 Disposition
 
 A confirmed duplicate is blocked from payment and returned to the vendor. A rejected match is released to the normal payment schedule with the reviewer's rationale recorded on the case.
+
+### 4.4 Recurring charges under blanket purchase orders
+
+Invoice pairs whose vendor holds a service agreement with a registered recurring
+billing schedule against the referenced blanket purchase order are exempt from
+duplicate review when the billed amount matches the contracted amount. A recurring
+charge billed at its contracted amount is expected activity, not a duplicate, and is
+released to the normal payment schedule. Pairs whose billed amount does **not** match
+the contracted amount are not exempt and are routed for human review under section 4.2.
 
 ## 5. Records and audit
 
