@@ -31,6 +31,15 @@
       "expects": ["outputs.schedule_match == true"]
     },
     {
+      "id": "verify_amount",
+      "skill": "custom.amount_matches_contract",
+      "args": {
+        "billed_amount": "case_file.current_invoice.total",
+        "contracted_amount": "steps.fetch_contract.contract.recurring_amount"
+      },
+      "expects": ["outputs.billed_equals_contracted == true"]
+    },
+    {
       "id": "record_disposition",
       "skill": "cases.record_disposition",
       "args": { "disposition": "valid_recurring_billing" },
