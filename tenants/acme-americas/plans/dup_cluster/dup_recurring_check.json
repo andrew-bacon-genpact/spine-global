@@ -1,0 +1,57 @@
+{
+  "plan_id": "dup_recurring_check",
+  "version": 1,
+  "case_type": "dup_cluster",
+  "tenant": "acme-americas",
+  "learned_from_case": "C-114",
+  "signature": {
+    "case_type": "dup_cluster",
+    "match_fields": ["vendor", "po_reference", "line_items", "amount"],
+    "diff_fields": ["invoice_number", "document_date"],
+    "po_kind": "blanket"
+  },
+  "steps": [
+    {
+      "id": "fetch_contract",
+      "skill": "spine.fetch_vendor_contract",
+      "args": {
+        "vendor_id": "case_file.vendor_id",
+        "po_reference": "case_file.po_reference"
+      },
+      "expects": ["outputs.contract_found == true"]
+    },
+    {
+      "id": "check_recurring_schedule",
+      "skill": "custom.recurring_schedule_check",
+      "args": {
+        "contract": "steps.fetch_contract.contract",
+        "po_reference": "case_file.po_reference",
+        "invoice_date": "case_file.current_invoice.document_date"
+      },
+      "expects": ["outputs.schedule_match == true"]
+    },
+    {
+      "id": "verify_amount",
+      "skill": "custom.amount_matches_contract",
+      "args": {
+        "billed_amount": "case_file.current_invoice.total",
+        "contracted_amount": "steps.fetch_contract.contract.recurring_amount"
+      },
+      "expects": ["outputs.billed_equals_contracted == true"]
+    },
+    {
+      "id": "record_disposition",
+      "skill": "cases.record_disposition",
+      "args": { "disposition": "valid_recurring_billing" },
+      "gates": ["duplicate_disposition_check"],
+      "approval": false
+    }
+  ],
+  "on_expectation_failure": "escalate",
+  "citations": ["ACME-AP-POL-114 v3 §4.4", "NW-SA-2024"],
+  "provenance": {
+    "case": "C-114",
+    "operator": "Priya S.",
+    "operator_rationale": "Not duplicates. Northwind bills $1,200 monthly against blanket PO-32011 per service agreement NW-SA-2024; identical invoices are expected every month. The agreement is not in the provided sources; found it in the client SharePoint. Also: cited duplicate policy is v2, current is v3."
+  }
+}
